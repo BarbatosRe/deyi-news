@@ -20,8 +20,15 @@ public class WmNewsController {
 
     @PostMapping("/list")
     public ResponseResult findAll(@RequestBody WmNewsPageReqDto dto){
+
         return wmNewsService.findAll(dto);
     }
+
+//    @PostMapping("/list")
+//    public String findOne(@RequestBody WmNewsPageReqDto dto){
+//
+//        return wmNewsService.findOne(dto);
+//    }
 
     @PostMapping("/submit")
     public ResponseResult submitNews(@RequestBody WmNewsDto dto){

@@ -90,6 +90,14 @@
             <groupId>com.aliyun</groupId>
             <artifactId>aliyun-java-sdk-green</artifactId>
         </dependency>
+
+        <!--腾讯内容安全审核-->
+        <dependency>
+            <groupId>com.qcloud</groupId>
+            <artifactId>cos_api</artifactId>
+            <version>5.6.89</version>
+        </dependency>
+
         <!--HBase-->
         <dependency>
             <groupId>org.apache.hbase</groupId>

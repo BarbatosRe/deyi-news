@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface WmNewsService extends IService<WmNews> {
     public ResponseResult findAll(WmNewsPageReqDto dto);
 
+    public String findOne(WmNewsPageReqDto dto);
+
     public ResponseResult submitNews(WmNewsDto dto);
 
 }

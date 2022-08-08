@@ -2,6 +2,7 @@ package com.heima.wemedia.service.impl;
 
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -11,12 +12,14 @@ import com.heima.common.constants.WemediaConstants;
 import com.heima.common.exception.CustomException;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.common.dtos.ResponseResult;
+import com.heima.model.common.dtos.ResponseResult2;
 import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.wemedia.dtos.WmNewsDto;
 import com.heima.model.wemedia.dtos.WmNewsPageReqDto;
 import com.heima.model.wemedia.pojos.WmMaterial;
 import com.heima.model.wemedia.pojos.WmNews;
 import com.heima.model.wemedia.pojos.WmNewsMaterial;
+import com.heima.model.wemedia.pojos.WmUser;
 import com.heima.utils.thread.WmThreadLocalUtil;
 import com.heima.wemedia.mapper.WmMaterialMapper;
 import com.heima.wemedia.mapper.WmNewsMapper;
@@ -50,8 +53,54 @@ public class WmNewsServiceImpl  extends ServiceImpl<WmNewsMapper, WmNews> implem
         //分页参数检查
         dto.checkParam();
 
+        //获取当前登录人的信息
+        WmUser user = WmThreadLocalUtil.getUser();
+        if(user == null){
+            return ResponseResult.errorResult(AppHttpCodeEnum.NEED_LOGIN);
+        }
+
         //2.分页查询
         IPage page=new Page(dto.getPage(), dto.getSize());
+        LambdaQueryWrapper<WmNews> queryWrapper = new LambdaQueryWrapper<>();
+        //状态精确查询
+        if (dto.getStatus() !=null){
+            queryWrapper.eq(WmNews::getStatus,dto.getStatus());
+        }
+        //频道精确查询
+        if (dto.getChannelId()!=null){
+            queryWrapper.eq(WmNews::getChannelId,dto.getChannelId());
+        }
+        //时间范围精确查询
+        if (dto.getBeginPubDate()!=null && dto.getEndPubDate() !=null){
+            queryWrapper.between(WmNews::getPublishTime,dto.getBeginPubDate(),dto.getEndPubDate());
+        }
+        //关键字模糊查询
+        if (StringUtils.isNotBlank(dto.getKeyword())){
+            queryWrapper.like(WmNews::getTitle,dto.getKeyword());
+        }
+        //查询当前登录用户的文章
+        queryWrapper.eq(WmNews::getUserId, WmThreadLocalUtil.getUser().getId());
+
+        //发布时间倒叙查询
+        queryWrapper.orderByDesc(WmNews::getCreatedTime);
+        page = page(page, queryWrapper);
+
+        System.out.println(page);
+        //3.返回结果
+        ResponseResult responseResult=new PageResponseResult(dto.getPage(), dto.getSize(), (int) page.getTotal());
+        responseResult.setData(page.getRecords());
+        System.out.println(responseResult.getData());
+        return responseResult;
+    }
+
+
+    @Override
+    public String findOne(WmNewsPageReqDto dto) {
+
+            //分页参数检查
+        //dto.checkParam();
+
+        //2.分页查询
         LambdaQueryWrapper<WmNews> queryWrapper = new LambdaQueryWrapper<>();
         //状态精确查询
         if (dto.getStatus() !=null){
@@ -74,11 +123,13 @@ public class WmNewsServiceImpl  extends ServiceImpl<WmNewsMapper, WmNews> implem
         //发布时间倒叙查询
         queryWrapper.orderByDesc(WmNews::getPublishTime);
 
-        page = page(page, queryWrapper);
+        List<WmNews> wmNews = getBaseMapper().selectList(queryWrapper);
+
+        ResponseResult2 result2 = new ResponseResult2<>();
+        result2.setData(wmNews);
         //3.返回结果
-        ResponseResult responseResult=new PageResponseResult(dto.getPage(), dto.getSize(), (int) page.getTotal());
-        responseResult.setData(page);
-        return responseResult;
+        System.out.println(result2);
+        return JSONArray.toJSONString(result2);
     }
 
     /**
