@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 @SpringBootTest(classes = WemediaApplication.class)
@@ -39,7 +41,12 @@ public class AliyunTest {
 
     @Test
     public void testScanImage() throws Exception {
-        Map map = greenImageScan2.imageScan("http://42.192.81.196:9000/leadnews/2022/08/03/502180ef-7313-4654-9c52-b2856fad0dbb.jpg");
+       /* List<String> stringList = new ArrayList<>();
+        stringList.add("http://42.192.81.196:9000/leadnews/2022/08/03/7a0a3720-64db-432c-8979-2048fd370993.png");
+        stringList.add("http://42.192.81.196:9000/leadnews/2022/08/03/6367e903-5722-4f5b-ab1a-3040dd58ddf0.png");
+        Map map = greenImageScan2.imageScan(stringList);*/
+
+        Map map = greenImageScan2.imageScan("http://42.192.81.196:9000/leadnews/2022/08/03/3.png");
         System.out.println(map);
     }
 }
