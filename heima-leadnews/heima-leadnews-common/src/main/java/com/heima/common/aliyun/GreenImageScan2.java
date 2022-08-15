@@ -47,7 +47,8 @@ public class GreenImageScan2 {
         ClientConfig clientConfig = new ClientConfig(region);
         // 这里建议设置使用 https 协议
         // 从 5.6.54 版本开始，默认使用了 https
-        clientConfig.setHttpProtocol(HttpProtocol.https);
+        clientConfig.setHttpProtocol(HttpProtocol.http);
+
         // 3 生成 cos 客户端。
         COSClient cosClient = new COSClient(cred, clientConfig);
         // 4 保存结果的
@@ -67,12 +68,13 @@ public class GreenImageScan2 {
         }
 
         //2.2设置审核类型
-        request.getConf().setDetectType("all");
+        request.getConf().setDetectType("porn");
         try {
             //3.调用接口,获取任务响应对象
             BatchImageAuditingResponse response = cosClient.batchImageAuditing(request);
             List<BatchImageJobDetail> jobList = response.getJobList();
             for (BatchImageJobDetail batchImageJobDetail : jobList) {
+                System.out.println(batchImageJobDetail.toString());
                 List<AuditingInfo> imageInfoList = AuditingResultUtil.getBatchImageInfoList(batchImageJobDetail);
                 System.out.println(imageInfoList);
                 if (!batchImageJobDetail.getResult().equals("0")) {

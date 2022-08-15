@@ -41,12 +41,13 @@ public class AliyunTest {
 
     @Test
     public void testScanImage() throws Exception {
-       /* List<String> stringList = new ArrayList<>();
-        stringList.add("http://42.192.81.196:9000/leadnews/2022/08/03/7a0a3720-64db-432c-8979-2048fd370993.png");
-        stringList.add("http://42.192.81.196:9000/leadnews/2022/08/03/6367e903-5722-4f5b-ab1a-3040dd58ddf0.png");
-        Map map = greenImageScan2.imageScan(stringList);*/
+        List<String> stringList = new ArrayList<>();
+        stringList.add("http://42.192.81.196:9000/leadnews/2022/test/illust_69541377_20180828_193043.png");
+        stringList.add("http://42.192.81.196:9000/leadnews/2022/test/12893895272b4ee50d080834bd.jpg");
+        stringList.add("http://42.192.81.196:9000/leadnews/2022/test/MikoXKokomi.png");
+        Map map = greenImageScan2.imageScan(stringList);
 
-        Map map = greenImageScan2.imageScan("http://42.192.81.196:9000/leadnews/2022/08/03/3.png");
+        //Map map = greenImageScan2.imageScan("");
         System.out.println(map);
     }
 }
