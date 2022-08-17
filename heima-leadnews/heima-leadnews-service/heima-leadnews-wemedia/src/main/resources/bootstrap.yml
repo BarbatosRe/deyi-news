@@ -14,3 +14,7 @@ spring:
     multipart:
       max-file-size: 10MB    #是设置单个文件的大小,
       max-request-size: 100MB  #是设置单次请求的文件的总大小
+
+tess4j:
+  data-path: D:\JavaPlace\WorkSpace_Java\Tesseract
+  language: chi_sim

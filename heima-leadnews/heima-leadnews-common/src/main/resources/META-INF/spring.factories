@@ -3,4 +3,5 @@ com.heima.common.exception.ExceptionCatch,\
 com.heima.common.Knife4j.Swagger2Configuration,\
 com.heima.common.aliyun.GreenTextScan2,\
 com.heima.common.aliyun.GreenImageScan,\
-com.heima.common.aliyun.GreenImageScan2
+com.heima.common.aliyun.GreenImageScan2,\
+com.heima.common.tess4j.Tess4jClient
