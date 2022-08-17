@@ -116,7 +116,7 @@ public class WmNewsAutoScanServiceImpl implements WmNewsAutoScanService {
     @Autowired
     private IArticleClient articleClient;
     /**
-     * 保存app端相关的文章数据
+     * 保存app端相关的文章数据的
      * @param wmNews
      */
     private ResponseResult saveAppArticle(WmNews wmNews) {
