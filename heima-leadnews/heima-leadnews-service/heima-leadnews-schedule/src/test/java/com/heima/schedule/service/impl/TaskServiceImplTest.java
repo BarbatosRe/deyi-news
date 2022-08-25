@@ -20,9 +20,9 @@ public class TaskServiceImplTest {
     @Test
     public void addTask(){
         Task task = new Task();
-        task.setTaskType(100);
-        task.setPriority(50);
-        task.setParameters("Task test".getBytes());
+        task.setTaskType(110);
+        task.setPriority(60);
+        task.setParameters("Task test2".getBytes());
         task.setExecuteTime(new Date().getTime());
 
         long taskId = taskService.addTask(task);
@@ -32,5 +32,10 @@ public class TaskServiceImplTest {
     @Test
     public void cancelTask(){
         taskService.cancelTask(1561345903674253314L);
+    }
+
+    @Test
+    public void pollTask(){
+        taskService.poll(110,60);
     }
 }

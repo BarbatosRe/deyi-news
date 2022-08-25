@@ -10,14 +10,17 @@ import com.heima.schedule.mapper.TaskinfoLogsMapper;
 import com.heima.schedule.mapper.TaskinfoMapper;
 import com.heima.schedule.service.TaskService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -59,6 +62,54 @@ public class TaskServiceImpl implements TaskService {
             flag=true;
         }
         return flag;
+    }
+
+    /**
+     * 按照类型和优先级来拉取任务
+     *
+     * @param type
+     * @param priority
+     * @return
+     */
+    @Override
+    public Task poll(int type, int priority) {
+        Task task=null;
+        try {
+            String key=type+"_"+priority;
+            String task_json=cacheService.lRightPop(ScheduleConstants.TOPIC+key);
+            if (StringUtils.isNotBlank(task_json)){
+                task = JSON.parseObject(task_json, Task.class);
+                //更新数据库信息
+                updataDb(task.getTaskId(),ScheduleConstants.EXECUTED);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("poll task exception");
+        }
+
+        return task;
+    }
+
+    /**
+     * 未来数据定时刷新
+     */
+    @Override
+    @Scheduled(cron = "0 */1 * * * ?")
+    public void refresh() {
+        System.out.println(System.currentTimeMillis() / 1000 +"执行了定时任务");
+
+        //获取所有未来数据集合的key值
+        Set<String> futurekeys = cacheService.scan(ScheduleConstants.FUTURE + "*");
+        for (String futureKey : futurekeys) {
+            String topicKey=ScheduleConstants.TOPIC+futureKey.split(ScheduleConstants.FUTURE)[1];
+            //获取该组key下当前需要消费的任务数据
+            Set<String> tasks = cacheService.zRangeByScore(futureKey, 0, System.currentTimeMillis());
+            if (!tasks.isEmpty()){
+                //将这些任务数据添加到消费者队列中
+                cacheService.refreshWithPipeline(futureKey,topicKey,tasks);
+                System.out.println("成功的将" + futureKey + "下的当前需要执行的任务数据刷新到" + topicKey + "下");
+            }
+        }
     }
 
     private void removeTaskFromCache(Task task) {
