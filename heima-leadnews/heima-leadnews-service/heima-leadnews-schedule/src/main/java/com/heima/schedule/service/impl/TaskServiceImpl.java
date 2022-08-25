@@ -1,6 +1,7 @@
 package com.heima.schedule.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.heima.common.constants.ScheduleConstants;
 import com.heima.common.redis.CacheService;
 import com.heima.model.schedule.dtos.Task;
@@ -18,8 +19,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -98,18 +101,56 @@ public class TaskServiceImpl implements TaskService {
     public void refresh() {
         System.out.println(System.currentTimeMillis() / 1000 +"执行了定时任务");
 
-        //获取所有未来数据集合的key值
-        Set<String> futurekeys = cacheService.scan(ScheduleConstants.FUTURE + "*");
-        for (String futureKey : futurekeys) {
-            String topicKey=ScheduleConstants.TOPIC+futureKey.split(ScheduleConstants.FUTURE)[1];
-            //获取该组key下当前需要消费的任务数据
-            Set<String> tasks = cacheService.zRangeByScore(futureKey, 0, System.currentTimeMillis());
-            if (!tasks.isEmpty()){
-                //将这些任务数据添加到消费者队列中
-                cacheService.refreshWithPipeline(futureKey,topicKey,tasks);
-                System.out.println("成功的将" + futureKey + "下的当前需要执行的任务数据刷新到" + topicKey + "下");
+        String tryLock = cacheService.tryLock("FUTURE_TASK_SYNC", 1000 * 30);
+        if (StringUtils.isNotBlank(tryLock)){
+            log.info("未来数据定时刷新---定时任务");
+            //获取所有未来数据集合的key值
+            Set<String> futurekeys = cacheService.scan(ScheduleConstants.FUTURE + "*");
+            for (String futureKey : futurekeys) {
+                String topicKey=ScheduleConstants.TOPIC+futureKey.split(ScheduleConstants.FUTURE)[1];
+                //获取该组key下当前需要消费的任务数据
+                Set<String> tasks = cacheService.zRangeByScore(futureKey, 0, System.currentTimeMillis());
+                if (!tasks.isEmpty()){
+                    //将这些任务数据添加到消费者队列中
+                    cacheService.refreshWithPipeline(futureKey,topicKey,tasks);
+                    System.out.println("成功的将" + futureKey + "下的当前需要执行的任务数据刷新到" + topicKey + "下");
+                }
             }
         }
+    }
+
+    /**
+     * 数据库定时同步数据到缓存
+     */
+    @Override
+    @Scheduled(cron = "0 */5 * * * ?")
+    @PostConstruct
+    public void reloadData() {
+        //同步前先清理缓存的数据
+        clearCache();
+        log.info("数据库数据同步到缓存");
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MINUTE,5);
+        //查看小于未来5分钟的所有任务
+        List<Taskinfo> taskinfos = taskinfoMapper.selectList(Wrappers.<Taskinfo>lambdaQuery()
+                .lt(Taskinfo::getExecuteTime, calendar.getTime()));
+        if (taskinfos!=null&&taskinfos.size()>0){
+            for (Taskinfo taskinfo : taskinfos) {
+                Task task = new Task();
+                BeanUtils.copyProperties(taskinfo,task);
+                task.setExecuteTime(taskinfo.getExecuteTime().getTime());
+                addTaskToCache(task);
+            }
+        }
+    }
+
+    private void clearCache(){
+        // 删除缓存中未来数据集合和当前消费者队列的所有key
+        Set<String> futureKeys = cacheService.scan(ScheduleConstants.FUTURE+"*");
+        Set<String> topicKeys = cacheService.scan(ScheduleConstants.TOPIC+"*");
+
+        cacheService.delete(futureKeys);
+        cacheService.delete(topicKeys);
     }
 
     private void removeTaskFromCache(Task task) {

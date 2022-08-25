@@ -31,4 +31,9 @@ public interface TaskService {
      * 未来数据定时刷新
      */
     public void refresh();
+
+    /**
+     * 数据库定时同步数据到缓存
+     */
+    public void reloadData();
 }
