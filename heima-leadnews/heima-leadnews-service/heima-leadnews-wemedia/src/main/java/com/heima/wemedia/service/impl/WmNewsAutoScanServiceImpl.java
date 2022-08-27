@@ -62,7 +62,7 @@ public class WmNewsAutoScanServiceImpl implements WmNewsAutoScanService {
             //从内容中提取纯文本内容和图片
             Map<String,Object> textAndImages = handleTextAndImages(wmNews);
             //自管理的敏感词过滤
-            boolean isSensitive = handleSensitiveScan((String) textAndImages.get("content"), wmNews);
+            boolean isSensitive = handleSensitiveScan(String.valueOf(textAndImages.get("content")), wmNews);
             if(!isSensitive) return;
             //2.审核文本内容  阿里云接口
             boolean isTextScan = handleTextScan(String.valueOf(textAndImages.get("content")),wmNews);
