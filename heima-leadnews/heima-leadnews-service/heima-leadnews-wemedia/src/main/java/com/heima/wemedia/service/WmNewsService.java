@@ -13,5 +13,11 @@ public interface WmNewsService extends IService<WmNews> {
     public String findOne(WmNewsPageReqDto dto);
 
     public ResponseResult submitNews(WmNewsDto dto);
+    /**
+     * 文章的上下架
+     * @param dto
+     * @return
+     */
+    public ResponseResult upOrdown(@RequestBody WmNewsDto dto);
 
 }

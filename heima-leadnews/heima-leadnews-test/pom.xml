@@ -13,6 +13,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>tess4j</module>
+        <module>kafka-demo</module>
     </modules>
 
     <properties>
