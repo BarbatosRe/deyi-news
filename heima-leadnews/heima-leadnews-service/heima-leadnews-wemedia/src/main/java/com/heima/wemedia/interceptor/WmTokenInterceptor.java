@@ -23,7 +23,7 @@ public class WmTokenInterceptor implements HandlerInterceptor {
             WmUser wmUser = new WmUser();
             wmUser.setId(Integer.valueOf(userId));
             WmThreadLocalUtil.setUser(wmUser);
-            log.info("wmTokenFilter设置用户信息到threadlocal中...");
+            //log.info("wmTokenFilter设置用户信息到threadlocal中...");
         }
 
         return true;
@@ -31,7 +31,12 @@ public class WmTokenInterceptor implements HandlerInterceptor {
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-        log.info("清理threadlocal...");
+//        log.info("清理threadlocal...");
+//        WmThreadLocalUtil.clear();
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         WmThreadLocalUtil.clear();
     }
 }

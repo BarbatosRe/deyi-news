@@ -1,0 +1,13 @@
+server:
+  port: 9998
+spring:
+  data:
+    mongodb:
+      uri: mongodb://mymongo:zhanG4415@42.192.81.196:27017/leadnews-history?authSource=admin&authMechanism=SCRAM-SHA-1
+
+#      host: 42.192.81.196
+#      port: 27017
+#      username: mymongo
+#      password: zhanG4415
+#      authentication-database: leadnews-history
+

@@ -1,0 +1,16 @@
+server:
+  port: 51805
+spring:
+  application:
+    name: leadnews-admin
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 42.192.81.196:8848
+      config:
+        server-addr: 42.192.81.196:8848
+        file-extension: yml
+
+tess4j:
+  data-path: D:\JavaPlace\WorkSpace_Java\Tesseract
+  language: chi_sim
