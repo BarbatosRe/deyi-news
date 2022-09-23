@@ -27,11 +27,11 @@ public class WmArtifichirScanController {
 
     @PostMapping("/auth_fail")
     public ResponseResult authFail(@RequestBody NewsAuthDto dto){
-        return wmArtifichirScanService.findlist(dto);
+        return wmArtifichirScanService.authFail(dto);
     }
 
     @PostMapping("/auth_pass")
     public ResponseResult authPass(@RequestBody NewsAuthDto dto){
-        return wmArtifichirScanService.findlist(dto);
+        return wmArtifichirScanService.authPass(dto);
     }
 }

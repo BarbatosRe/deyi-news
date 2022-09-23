@@ -12,6 +12,7 @@ import com.heima.model.wemedia.pojos.WmNews;
 import com.heima.model.wemedia.pojos.WmSensitive;
 import com.heima.model.wemedia.pojos.WmUser;
 import com.heima.utils.common.SensitiveWordUtil;
+import com.heima.wemedia.common.SaveAppArticle;
 import com.heima.wemedia.mapper.WmChannelMapper;
 import com.heima.wemedia.mapper.WmNewsMapper;
 import com.heima.wemedia.mapper.WmSensitiveMapper;
@@ -40,6 +41,8 @@ public class WmNewsAutoScanServiceImpl implements WmNewsAutoScanService {
     @Autowired
     private WmNewsMapper wmNewsMapper;
 
+    @Autowired
+    private SaveAppArticle saveAppArticle;
 
     /**
      * 自媒体文章审核
@@ -71,7 +74,7 @@ public class WmNewsAutoScanServiceImpl implements WmNewsAutoScanService {
             boolean imageScan = handleImageScan((List<String>) textAndImages.get("images"), wmNews);
             if (!imageScan)return;
             //4.审核成功，保存app端的相关的文章数据
-            ResponseResult responseResult = saveAppArticle(wmNews);
+            ResponseResult responseResult = saveAppArticle.saveAppArticle(wmNews);
             if(!responseResult.getCode().equals(200)){
                 throw new RuntimeException("WmNewsAutoScanServiceImpl-文章审核，保存app端相关文章数据失败");
             }
@@ -106,49 +109,6 @@ public class WmNewsAutoScanServiceImpl implements WmNewsAutoScanService {
         return flag;
     }
 
-    @Autowired
-    private WmChannelMapper channelMapper;
-
-    @Autowired
-    private WmUserMapper wmUserMapper;
-
-    @Qualifier("com.heima.apis.article.IArticleClient")
-    @Autowired
-    private IArticleClient articleClient;
-    /**
-     * 保存app端相关的文章数据的
-     * @param wmNews
-     */
-    private ResponseResult saveAppArticle(WmNews wmNews) {
-        //需要远程调用的一个参数类ArticleDto
-        ArticleDto dto = new ArticleDto();
-        //属性的拷贝
-        BeanUtils.copyProperties(wmNews,dto);
-        //文章的布局
-        dto.setLayout(wmNews.getType());
-        //频道
-        WmChannel wmChannel = channelMapper.selectById(wmNews.getChannelId());
-        if (wmChannel !=null){
-            dto.setChannelName(wmChannel.getName());
-        }
-
-        //作者
-        dto.setAuthorId(wmNews.getUserId().longValue());
-        WmUser wmUser = wmUserMapper.selectById(wmNews.getUserId());
-        if (wmUser!=null){
-            dto.setAuthorName(wmUser.getName());
-        }
-
-        //设置文章id
-        if (wmNews.getArticleId()!=null){
-            dto.setId(wmNews.getArticleId());
-        }
-        dto.setPublishTime(new Date());
-
-        ResponseResult responseResult = articleClient.saveArticle(dto);
-        return responseResult;
-
-    }
 
 
     @Autowired

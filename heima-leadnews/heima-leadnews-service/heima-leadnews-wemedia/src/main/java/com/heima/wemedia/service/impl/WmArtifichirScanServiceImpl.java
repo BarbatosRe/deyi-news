@@ -2,17 +2,23 @@ package com.heima.wemedia.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.heima.apis.article.IArticleClient;
 import com.heima.model.admin.dtos.NewsAuthDto;
+import com.heima.model.article.dots.ArticleDto;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.wemedia.pojos.WmAuthScanVO;
 import com.heima.model.wemedia.pojos.WmNews;
+import com.heima.wemedia.common.SaveAppArticle;
 import com.heima.wemedia.mapper.WmAuthScanMapper;
 import com.heima.wemedia.mapper.WmNewsMapper;
 import com.heima.wemedia.service.WmArtifichirScanService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,7 +82,11 @@ public class WmArtifichirScanServiceImpl implements WmArtifichirScanService {
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
 
+    @Autowired
+    private SaveAppArticle saveAppArticle;
+
     @Override
+    @Async
     public ResponseResult authPass(NewsAuthDto dto) {
         //检查参数
         if (dto == null || dto.getId()<0){
@@ -90,6 +100,16 @@ public class WmArtifichirScanServiceImpl implements WmArtifichirScanService {
         //修改文章状态为通过
         wmNews.setStatus((short) 8);
 
+        wmNewsMapper.updateById(wmNews);
+        //人工审核通过，保存同步到app端
+        ResponseResult responseResult = saveAppArticle.saveAppArticle(wmNews);
+        if (!responseResult.getCode().equals(200)){
+            throw new RuntimeException("WmNewsAutoScanServiceImpl-文章审核，保存app端相关文章数据失败");
+        }
+        //回填id
+        wmNews.setArticleId((Long) responseResult.getData());
+        wmNews.setStatus((short) 9);
+        wmNews.setReason("审核成功");
         wmNewsMapper.updateById(wmNews);
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
