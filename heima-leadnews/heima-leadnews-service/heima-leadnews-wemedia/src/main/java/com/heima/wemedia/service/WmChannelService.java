@@ -18,4 +18,6 @@ public interface WmChannelService extends IService<WmChannel> {
     public ResponseResult saveChannel(AdChannel dto);
 
     public ResponseResult updateChannel(AdChannel dto);
+
+    public String findOne(Integer id);
 }

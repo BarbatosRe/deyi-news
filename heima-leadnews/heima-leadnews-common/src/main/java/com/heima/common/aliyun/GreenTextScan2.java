@@ -89,7 +89,7 @@ public class GreenTextScan2 {
     //            System.out.println(JSON.toJSONString(scrResponse, true));
                 String label = jobsDetail.getLabel();
                 String result = jobsDetail.getResult();
-                if (!result.equals("0")){
+                if (!"0".equals(result)){
                     resultMap.put("result",result);
                     resultMap.put("label",label);
                     return resultMap;

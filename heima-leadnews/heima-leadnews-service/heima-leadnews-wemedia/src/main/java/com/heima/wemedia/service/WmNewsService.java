@@ -18,6 +18,7 @@ public interface WmNewsService extends IService<WmNews> {
      * @param dto
      * @return
      */
-    public ResponseResult upOrdown(@RequestBody WmNewsDto dto);
+    public ResponseResult upOrdown(WmNewsDto dto);
 
+    ResponseResult upDate(Integer id);
 }

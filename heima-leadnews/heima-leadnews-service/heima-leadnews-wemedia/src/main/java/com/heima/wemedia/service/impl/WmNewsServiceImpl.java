@@ -17,25 +17,27 @@ import com.heima.model.common.dtos.ResponseResult2;
 import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.wemedia.dtos.WmNewsDto;
 import com.heima.model.wemedia.dtos.WmNewsPageReqDto;
-import com.heima.model.wemedia.pojos.WmMaterial;
-import com.heima.model.wemedia.pojos.WmNews;
-import com.heima.model.wemedia.pojos.WmNewsMaterial;
-import com.heima.model.wemedia.pojos.WmUser;
+import com.heima.model.wemedia.pojos.*;
 import com.heima.utils.thread.WmThreadLocalUtil;
 import com.heima.wemedia.mapper.WmMaterialMapper;
 import com.heima.wemedia.mapper.WmNewsMapper;
 import com.heima.wemedia.mapper.WmNewsMaterialMapper;
+import com.heima.wemedia.service.WmChannelService;
 import com.heima.wemedia.service.WmNewsAutoScanService;
 import com.heima.wemedia.service.WmNewsService;
 import com.heima.wemedia.service.WmNewsTaskService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -187,10 +189,19 @@ public class WmNewsServiceImpl  extends ServiceImpl<WmNewsMapper, WmNews> implem
         WmNews news = getById(wmNews);
         System.out.println(news);
         //wmNewsAutoScanService.autoScanWmNews(wmNews.getId());
+        if(wmNews.getPublishTime()==null||"".equals(wmNews.getPublishTime())){
+            wmNews.setPublishTime(getNowTime());
+        }
         wmNewsTaskService.addNewsToTask(wmNews.getId(),wmNews.getPublishTime());
 
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
 
+    }
+
+    private Date getNowTime() {
+        LocalDateTime now = LocalDateTime.now();
+        Date date = Date.from(now.atZone(ZoneId.systemDefault()).toInstant());
+        return date;
     }
 
     /**
@@ -233,6 +244,7 @@ public class WmNewsServiceImpl  extends ServiceImpl<WmNewsMapper, WmNews> implem
         if(images != null && images.size() > 0){
             saveRelativeInfo(images,wmNews.getId(),WemediaConstants.WM_COVER_REFERENCE);
         }
+
 
     }
 
@@ -367,5 +379,33 @@ public class WmNewsServiceImpl  extends ServiceImpl<WmNewsMapper, WmNews> implem
         }
 
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+    }
+
+
+    @Autowired
+    private WmChannelService wmChannelService;
+    /**
+     * 修改未上架的文章
+     * @param id
+     * @return
+     */
+    @Override
+    public ResponseResult upDate(Integer id) {
+        //检查参数
+        if(id==null||id==0){
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+        }
+        //根据id查询信息
+        WmNews wmNews = getById(id);
+        //将返回的信息进行填充完整
+        String channelName = wmChannelService.findOne(wmNews.getChannelId());
+        if (channelName==null){
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+        }
+        WmNewsEdit wmNewsEdit = new WmNewsEdit();
+        BeanUtils.copyProperties(wmNews,wmNewsEdit,"channelId");
+        wmNewsEdit.setChannelId(channelName);
+        //返回结果
+        return ResponseResult.okResult(wmNewsEdit);
     }
 }

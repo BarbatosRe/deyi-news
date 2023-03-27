@@ -63,6 +63,7 @@ public class GreenImageScan2 {
         List<BatchImageAuditingInputObject> inputList = request.getInputList();
         for (String imageUrl : imageUrls) {
             BatchImageAuditingInputObject input = new BatchImageAuditingInputObject();
+            input.setLargeImageDetect("1");
             input.setUrl(imageUrl);
             inputList.add(input);
         }

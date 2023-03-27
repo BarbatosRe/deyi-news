@@ -124,4 +124,14 @@ public class WmChannelServiceImpl extends ServiceImpl<WmChannelMapper, WmChannel
 
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
+
+    @Override
+    public String findOne(Integer id) {
+        if (id==null||id==0){
+            return null;
+        }
+        WmChannel wmChannel = getById(id);
+        String name = wmChannel.getName();
+        return name;
+    }
 }

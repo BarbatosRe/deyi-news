@@ -10,3 +10,11 @@ spring:
       config:
         server-addr: 42.192.81.196:8848
         file-extension: yml
+
+#  cloud:
+#    nacos:
+#      discovery:
+#        server-addr: 127.0.0.1:8848
+#      config:
+#        server-addr: 127.0.0.1:8848
+#        file-extension: yml
