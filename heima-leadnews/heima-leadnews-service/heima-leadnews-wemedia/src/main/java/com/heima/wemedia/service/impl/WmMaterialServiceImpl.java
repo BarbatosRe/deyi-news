@@ -42,6 +42,8 @@ public class WmMaterialServiceImpl extends ServiceImpl<WmMaterialMapper, WmMater
     @Autowired
     private FileStorageService fileStorageService;
 
+
+
     /**
      * 图片上传
      *
@@ -63,7 +65,7 @@ public class WmMaterialServiceImpl extends ServiceImpl<WmMaterialMapper, WmMater
 
         String fileId = null;
         try {
-            fileId = fileStorageService.uploadImgFile("", fileName + postfix, multipartFile.getInputStream());
+            fileId = fileStorageService.uploadImgFile("newsImages", fileName + postfix, multipartFile.getInputStream());
             log.info("上传图片到Minio中，fileId：{}", fileId);
         } catch (Exception e) {
             e.printStackTrace();
@@ -107,5 +109,43 @@ public class WmMaterialServiceImpl extends ServiceImpl<WmMaterialMapper, WmMater
         responseResult.setData(page.getRecords());
         return responseResult;
     }
+
+    /**
+     * 图片素材的删除
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public ResponseResult delImage(Integer id) {
+        //参数检查
+        if (id==null||id==0){
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+        }
+        //根据id查询图片数据
+        WmMaterial wmMaterial = getById(id);
+        if (wmMaterial==null||"".equals(wmMaterial)){
+            return ResponseResult.errorResult(AppHttpCodeEnum.DATA_NOT_EXIST);
+        }
+        //获取图片url地址
+        String imageUrl = wmMaterial.getUrl();
+        //在minio中移除图片
+        try {
+            fileStorageService.delete(imageUrl);
+            log.info("删除图片中，fileId：{}", imageUrl);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.info("删除图片异常，fileId：{}",imageUrl );
+            return ResponseResult.errorResult(AppHttpCodeEnum.DATA_NOT_EXIST,"文件删除失败");
+        }
+        //删除数据库中的image信息
+        boolean isdel = removeById(id);
+        if (!isdel){
+            return ResponseResult.errorResult(AppHttpCodeEnum.DATA_NOT_EXIST,"文件删除失败");
+        }
+
+        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+    }
+
 
 }
