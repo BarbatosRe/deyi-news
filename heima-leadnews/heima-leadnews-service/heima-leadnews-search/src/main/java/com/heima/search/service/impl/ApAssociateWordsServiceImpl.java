@@ -39,9 +39,10 @@ public class ApAssociateWordsServiceImpl implements ApAssociateWordsService {
         }
         //3 执行查询 模糊查询
         Query query = Query.query(Criteria.where("associateWords")
-                .regex(".*?\\" + dto.getSearchWords() + ".*"));
+                .regex(".*?\\\\" + dto.getSearchWords() + ".*"));
         query.limit(dto.getPageSize());
         List<ApAssociateWords> apAssociateWords = mongoTemplate.find(query, ApAssociateWords.class);
         return ResponseResult.okResult(apAssociateWords);
+
     }
 }

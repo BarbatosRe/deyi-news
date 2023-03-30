@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.heima.common.constants.WemediaConstants;
@@ -17,6 +18,7 @@ import com.heima.model.wemedia.dtos.WmNewsDto;
 import com.heima.model.wemedia.pojos.WmMaterial;
 import com.heima.model.wemedia.pojos.WmNews;
 import com.heima.model.wemedia.pojos.WmNewsMaterial;
+import com.heima.model.wemedia.pojos.WmUser;
 import com.heima.utils.thread.WmThreadLocalUtil;
 import com.heima.wemedia.mapper.WmMaterialMapper;
 import com.heima.wemedia.mapper.WmNewsMaterialMapper;
@@ -147,5 +149,63 @@ public class WmMaterialServiceImpl extends ServiceImpl<WmMaterialMapper, WmMater
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
 
+    /**
+     * 图片收藏
+     * @param id
+     * @return
+     */
+    @Override
+    public ResponseResult collectImage(Integer id) {
+        //检查参数
+        if (id==null||id==0){
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+        }
+        //获取当前用户
+        WmUser wmUser = WmThreadLocalUtil.getUser();
+        //根据id查询到图片素材
+        WmMaterial material = getById(id);
+        if (material==null||"".equals(material)){
+            return ResponseResult.errorResult(AppHttpCodeEnum.DATA_NOT_EXIST);
+        }
+        //更改图片收藏的状态
+        update(Wrappers.<WmMaterial>lambdaUpdate()
+                .set(WmMaterial::getIsCollection,1)
+                .eq(WmMaterial::getUserId,wmUser.getId())
+                .eq(WmMaterial::getId,id)
+        );
+        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+    }
+
+    /**
+     * 取消收藏图片
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public ResponseResult cancelCollectimage(Integer id) {
+        //检查参数
+        if (id==null||id==0){
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+        }
+        //获取当前用户
+        WmUser wmUser = WmThreadLocalUtil.getUser();
+
+        //根据id查询到图片素材
+        WmMaterial material = getById(id);
+        if (material==null||"".equals(material)){
+            return ResponseResult.errorResult(AppHttpCodeEnum.DATA_NOT_EXIST);
+        }
+        //更改图片收藏的状态
+        if (material.getIsCollection()==0){
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID,"没有收藏不能取消收藏");
+        }
+        update(Wrappers.<WmMaterial>lambdaUpdate()
+                .set(WmMaterial::getIsCollection,0)
+                .eq(WmMaterial::getUserId,wmUser.getId())
+                .eq(WmMaterial::getId,id)
+        );
+        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+    }
 
 }
