@@ -13,6 +13,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -27,12 +28,22 @@ public class MongoTest {
     //保存
     @Test
     public void saveTest(){
-        for (int i = 0; i < 10; i++) {
-        ApAssociateWords apAssociateWords = new ApAssociateWords();
-        apAssociateWords.setAssociateWords("你是"+i+"个"+i+"个啊啊啊啊");
-        apAssociateWords.setCreatedTime(new Date());
-        mongoTemplate.save(apAssociateWords);
-        }
+//        for (int i = 0; i < 10; i++) {
+//        ApAssociateWords apAssociateWords = new ApAssociateWords();
+//        apAssociateWords.setAssociateWords("你是"+i+"个"+i+"个啊啊啊啊");
+//        apAssociateWords.setCreatedTime(new Date());
+//        mongoTemplate.save(apAssociateWords);
+//        }
+
+//        ApAssociateWords apAssociateWords = new ApAssociateWords();
+//        apAssociateWords.setAssociateWords("八重神子");
+//        apAssociateWords.setCreatedTime(new Date());
+//        mongoTemplate.save(apAssociateWords);
+
+        List<ApAssociateWords> list= new ArrayList<>();
+        list.add(new ApAssociateWords("chatGPT",new Date()));
+        list.add(new ApAssociateWords("甘雨",new Date()));
+        mongoTemplate.insertAll(list);
     }
 
     //查询一个

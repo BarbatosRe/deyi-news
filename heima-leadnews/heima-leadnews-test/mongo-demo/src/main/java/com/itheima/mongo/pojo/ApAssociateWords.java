@@ -13,7 +13,7 @@ import java.util.Date;
  *
  * @author itheima
  */
-@Data
+
 @Document("ap_associate_words")
 public class ApAssociateWords implements Serializable {
 
@@ -30,5 +30,44 @@ public class ApAssociateWords implements Serializable {
      * 创建时间
      */
     private Date createdTime;
+
+    public ApAssociateWords() {
+
+    }
+
+    public ApAssociateWords(String associateWords, Date createdTime) {
+        this.associateWords = associateWords;
+        this.createdTime = createdTime;
+    }
+
+    public ApAssociateWords(String associateWords) {
+        this(associateWords,new Date());
+    }
+
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getAssociateWords() {
+        return associateWords;
+    }
+
+    public void setAssociateWords(String associateWords) {
+        this.associateWords = associateWords;
+    }
+
+    public Date getCreatedTime() {
+        return createdTime;
+    }
+
+    public void setCreatedTime(Date createdTime) {
+        this.createdTime = createdTime;
+    }
+
 
 }
